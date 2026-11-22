@@ -3,10 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase settings. Copy .env.example to .env and fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then restart `npm run dev`.',
-  )
-}
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabaseConfigError = isSupabaseConfigured
+  ? null
+  : 'Missing Supabase settings. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment (for Vercel: Project Settings > Environment Variables) and redeploy so the values are included in the build.'
+
+export const supabase = isSupabaseConfigured ? createClient(supabaseUrl, supabaseAnonKey) : null

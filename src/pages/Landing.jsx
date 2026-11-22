@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import AuthCard from '../components/AuthCard'
-import { Button, Spinner } from '../components/ui'
+import { Alert, Button, Spinner } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
 import Hero from '../sections/Hero'
 import About from '../sections/About'
@@ -11,7 +11,7 @@ import Competition from '../sections/Competition'
 
 export default function Landing() {
   const { hash } = useLocation()
-  const { user, loading, signOut } = useAuth()
+  const { user, loading, signOut, configError } = useAuth()
 
   // Scroll to #section when navigating with <Link to="/#section">.
   useEffect(() => {
@@ -44,6 +44,10 @@ export default function Landing() {
             <div>
               {loading ? (
                 <Spinner />
+              ) : configError ? (
+                <Alert>
+                  Registration is unavailable because the app is not configured. {configError}
+                </Alert>
               ) : user ? (
                 <div className="rounded-3xl border-2 border-primary bg-base-200 p-8 text-center">
                   <p className="font-display text-2xl font-extrabold">You are signed in</p>

@@ -1,13 +1,20 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { supabase, supabaseConfigError } from '../lib/supabaseClient'
 
 const AuthContext = createContext(null)
 
+const missingConfigResult = async () => ({
+  data: { session: null, user: null },
+  error: new Error(supabaseConfigError),
+})
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(Boolean(supabase))
 
   useEffect(() => {
+    if (!supabase) return undefined
+
     let active = true
 
     supabase.auth
@@ -39,17 +46,22 @@ export function AuthProvider({ children }) {
       session,
       user: session?.user ?? null,
       loading,
-      signUp: (email, password, fullName) =>
-        supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName },
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-          },
-        }),
-      signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-      signOut: () => supabase.auth.signOut(),
+      configError: supabaseConfigError,
+      signUp: supabase
+        ? (email, password, fullName) =>
+            supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                data: { full_name: fullName },
+                emailRedirectTo: `${window.location.origin}/dashboard`,
+              },
+            })
+        : missingConfigResult,
+      signIn: supabase
+        ? (email, password) => supabase.auth.signInWithPassword({ email, password })
+        : missingConfigResult,
+      signOut: supabase ? () => supabase.auth.signOut() : async () => ({ error: null }),
     }),
     [session, loading],
   )

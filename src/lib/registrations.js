@@ -1,7 +1,14 @@
-import { supabase } from './supabaseClient'
+import { supabase, supabaseConfigError } from './supabaseClient'
+
+function requireSupabase() {
+  if (!supabase) {
+    throw new Error(supabaseConfigError || 'Supabase is not configured.')
+  }
+}
 
 /** Returns the signed-in contestant's registration, or null if none exists yet. */
 export async function getMyRegistration(userId) {
+  requireSupabase()
   const { data, error } = await supabase
     .from('registrations')
     .select('*')
@@ -13,6 +20,7 @@ export async function getMyRegistration(userId) {
 
 /** Creates the registration (first save) or updates it (later saves). */
 export async function saveRegistration(userId, values, existing) {
+  requireSupabase()
   if (existing) {
     // `status` is intentionally not sent: contestants never change it.
     const { data, error } = await supabase
